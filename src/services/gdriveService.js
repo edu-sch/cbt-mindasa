@@ -42,7 +42,8 @@ export const gdriveService = {
   },
 
   /**
-   * Mengunduh seluruh data (Bank Soal, Siswa, Hasil) dari Google Drive
+   * Mengunduh seluruh data dari Google Drive, lalu simpan ke localStorage
+   * Hanya timpa data jika Drive mengembalikan data valid (tidak kosong)
    */
   async pullDataFromDrive(scriptUrl) {
     if (!scriptUrl) throw new Error('URL Google Apps Script belum diisi');
@@ -57,10 +58,12 @@ export const gdriveService = {
 
       if (result && result.status === 'success') {
         const payload = result.data;
-        if (payload.users) storageService.saveUsers(payload.users);
-        if (payload.questions) storageService.saveQuestions(payload.questions);
-        if (payload.exams) storageService.saveExams(payload.exams);
+        // Hanya timpa jika Drive punya data (bukan array kosong dari Drive yang kosong)
+        if (payload.users && payload.users.length > 0) storageService.saveUsers(payload.users);
+        if (payload.questions) storageService.saveQuestions(payload.questions); // Soal boleh kosong
+        if (payload.exams && payload.exams.length > 0) storageService.saveExams(payload.exams);
         if (payload.results) storageService.saveResults(payload.results);
+        if (payload.subjects && payload.subjects.length > 0) storageService.saveSubjects(payload.subjects);
         return { success: true, message: 'Data berhasil ditarik dari Google Drive!' };
       } else {
         throw new Error(result.message || 'Format data dari Google Drive tidak valid');
@@ -83,6 +86,7 @@ export const gdriveService = {
       questions: storageService.getQuestions(),
       exams: storageService.getExams(),
       results: storageService.getResults(),
+      subjects: storageService.getSubjects(),
       timestamp: new Date().toISOString()
     };
 
