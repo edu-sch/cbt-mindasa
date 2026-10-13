@@ -61,7 +61,21 @@ export const gdriveService = {
         // Hanya timpa jika Drive punya data (bukan array kosong dari Drive yang kosong)
         if (payload.users && payload.users.length > 0) storageService.saveUsers(payload.users);
         if (payload.questions) storageService.saveQuestions(payload.questions); // Soal boleh kosong
-        if (payload.exams && payload.exams.length > 0) storageService.saveExams(payload.exams);
+        if (payload.exams && payload.exams.length > 0) {
+          const sanitizedExams = payload.exams.map(ex => {
+            if (ex.title && ex.title.includes('Asesmen Sumatif Akhir Jenjang')) {
+              const subj = ex.subject && !ex.subject.includes('Literasi, Numerasi') ? ex.subject : 'Matematika';
+              return {
+                ...ex,
+                title: `Ujian ${subj}`,
+                subject: subj,
+                categories: [subj]
+              };
+            }
+            return ex;
+          });
+          storageService.saveExams(sanitizedExams);
+        }
         if (payload.results) storageService.saveResults(payload.results);
         if (payload.subjects && payload.subjects.length > 0) storageService.saveSubjects(payload.subjects);
         return { success: true, message: 'Data berhasil ditarik dari Google Drive!' };
