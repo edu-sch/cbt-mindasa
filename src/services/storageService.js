@@ -36,8 +36,32 @@ export const storageService = {
     if (!existingQ || existingQ.includes('q-101') || existingQ.includes('Hutan mangrove')) {
       localStorage.setItem(STORAGE_KEYS.QUESTIONS, JSON.stringify([]));
     }
-    if (!localStorage.getItem(STORAGE_KEYS.EXAMS)) {
+    // Bersihkan ujian demo lama jika masih tersimpan di browser
+    const existingExamsStr = localStorage.getItem(STORAGE_KEYS.EXAMS);
+    if (!existingExamsStr) {
       localStorage.setItem(STORAGE_KEYS.EXAMS, JSON.stringify(INITIAL_EXAMS));
+    } else {
+      try {
+        const parsedExams = JSON.parse(existingExamsStr);
+        let changed = false;
+        const cleanedExams = parsedExams.map(ex => {
+          if (ex.title && ex.title.includes('Asesmen Sumatif Akhir Jenjang')) {
+            changed = true;
+            return {
+              ...ex,
+              title: `Ujian ${ex.subject || 'Matematika'}`,
+              subject: ex.subject && !ex.subject.includes('Literasi, Numerasi') ? ex.subject : 'Matematika',
+              categories: [ex.subject && !ex.subject.includes('Literasi, Numerasi') ? ex.subject : 'Matematika']
+            };
+          }
+          return ex;
+        });
+        if (changed) {
+          localStorage.setItem(STORAGE_KEYS.EXAMS, JSON.stringify(cleanedExams));
+        }
+      } catch (e) {
+        localStorage.setItem(STORAGE_KEYS.EXAMS, JSON.stringify(INITIAL_EXAMS));
+      }
     }
     if (!localStorage.getItem(STORAGE_KEYS.RESULTS)) {
       localStorage.setItem(STORAGE_KEYS.RESULTS, JSON.stringify(INITIAL_RESULTS));
