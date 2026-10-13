@@ -100,22 +100,54 @@ export function App() {
     setViewSummaryResult(finalResult);
   };
 
-  // Save Users update
+  // Helper: push semua data ke Google Drive (tanpa block UI)
+  const autoPushToDrive = (overrideQuestions, overrideExams, overrideUsers) => {
+    const cfg = storageService.getSettings();
+    if (!cfg?.gdriveScriptUrl) return; // Drive belum dikonfigurasi, skip
+    setSyncStatus('syncing');
+    const payload = {
+      action: 'saveData',
+      users: overrideUsers || storageService.getUsers(),
+      questions: overrideQuestions || storageService.getQuestions(),
+      exams: overrideExams || storageService.getExams(),
+      results: storageService.getResults(),
+      subjects: storageService.getSubjects(),
+      timestamp: new Date().toISOString()
+    };
+    fetch(cfg.gdriveScriptUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    })
+      .then(() => {
+        setSyncStatus('done');
+        setTimeout(() => setSyncStatus('idle'), 2500);
+      })
+      .catch(() => {
+        setSyncStatus('error');
+        setTimeout(() => setSyncStatus('idle'), 4000);
+      });
+  };
+
+  // Save Users update + auto-push ke Drive
   const handleSaveUsers = (newUsers) => {
     setUsers(newUsers);
     storageService.saveUsers(newUsers);
+    autoPushToDrive(null, null, newUsers);
   };
 
-  // Save Questions update
+  // Save Questions update + auto-push ke Drive
   const handleSaveQuestions = (newQuestions) => {
     setQuestions(newQuestions);
     storageService.saveQuestions(newQuestions);
+    autoPushToDrive(newQuestions, null, null);
   };
 
-  // Save Exams update
+  // Save Exams update + auto-push ke Drive
   const handleSaveExams = (newExams) => {
     setExams(newExams);
     storageService.saveExams(newExams);
+    autoPushToDrive(null, newExams, null);
   };
 
   // Save Settings update
@@ -124,10 +156,11 @@ export function App() {
     storageService.saveSettings(newSettings);
   };
 
-  // Save Subjects update (Mapel yang dibuat/dikelola guru)
+  // Save Subjects update + auto-push ke Drive
   const handleSaveSubjects = (newSubjects) => {
     setSubjects(newSubjects);
     storageService.saveSubjects(newSubjects);
+    autoPushToDrive(null, null, null);
   };
 
   // Reset Data to defaults
@@ -169,6 +202,7 @@ export function App() {
         onLogout={handleLogout}
         onResetData={handleResetData}
         settings={settings}
+        syncStatus={syncStatus}
       />
 
       <main className="flex-1">
