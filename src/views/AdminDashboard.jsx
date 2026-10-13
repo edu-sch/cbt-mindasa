@@ -1003,6 +1003,79 @@ export function AdminDashboard({
         </div>
       )}
 
+      {/* MODAL BUAT JADWAL UJIAN BARU (ADMIN) */}
+      {isExamModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+            <h3 className="text-base font-bold text-slate-900 pb-3 border-b border-slate-200 flex items-center space-x-2">
+              <Calendar className="w-5 h-5 text-emerald-600" />
+              <span>Buat Jadwal Ujian Baru</span>
+            </h3>
+
+            <form onSubmit={handleSaveExamSubmit} className="space-y-3.5 mt-4 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 uppercase mb-1">Mata Pelajaran yang Diujikan</label>
+                <select
+                  value={examSubjectInput}
+                  onChange={(e) => setExamSubjectInput(e.target.value)}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-blue-800"
+                >
+                  {subjects.map((sub, i) => (
+                    <option key={i} value={sub}>{sub}</option>
+                  ))}
+                  <option value="Umum">Umum / Terpadu</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 uppercase mb-1">Nama / Judul Ujian</label>
+                <input
+                  type="text"
+                  required
+                  value={examTitleInput}
+                  onChange={(e) => setExamTitleInput(e.target.value)}
+                  placeholder="Contoh: Ulangan Harian Bab 1 / PAS Semester Ganjil"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 uppercase mb-1">Durasi Pengerjaan (Menit)</label>
+                <input
+                  type="number"
+                  required
+                  min="5"
+                  max="300"
+                  value={examDurationInput}
+                  onChange={(e) => setExamDurationInput(e.target.value)}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold"
+                />
+              </div>
+
+              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-800 text-[11px]">
+                ℹ️ Token ujian 6 karakter akan dibuat otomatis dan ujian langsung berstatus <strong>AKTIF</strong>.
+              </div>
+
+              <div className="pt-3 border-t border-slate-200 flex justify-end space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setIsExamModalOpen(false)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold cursor-pointer"
+                >
+                  Simpan Jadwal Ujian
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
