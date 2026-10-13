@@ -12,8 +12,22 @@ import {
 } from 'lucide-react';
 import { storageService } from '../services/storageService';
 
-export function Navbar({ currentUser, onLogout, onResetData, settings }) {
+export function Navbar({ currentUser, onLogout, onResetData, settings, syncStatus = 'idle' }) {
   const isDriveConfigured = !!settings?.gdriveScriptUrl;
+
+  const syncLabel = {
+    idle: isDriveConfigured ? 'G.Drive Aktif' : 'DB Lokal',
+    syncing: 'Menyimpan ke Drive...',
+    done: '✓ Tersimpan ke Drive',
+    error: '⚠ Gagal Sync Drive'
+  }[syncStatus] || 'DB Lokal';
+
+  const syncColor = {
+    idle: isDriveConfigured ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200',
+    syncing: 'bg-blue-50 text-blue-700 border-blue-200 animate-pulse',
+    done: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    error: 'bg-rose-50 text-rose-700 border-rose-200'
+  }[syncStatus] || 'bg-amber-50 text-amber-700 border-amber-200';
 
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
@@ -43,17 +57,13 @@ export function Navbar({ currentUser, onLogout, onResetData, settings }) {
         {/* Right: Cloud status, User Info, Actions */}
         <div className="flex items-center space-x-3 sm:space-x-4">
           
-          {/* Cloud Database Status */}
+          {/* Cloud / Sync Status Badge */}
           <div 
             title={isDriveConfigured ? "Terhubung ke Google Drive API" : "Mode Database Lokal (Offline Ready)"}
-            className={`hidden md:flex items-center space-x-1.5 text-xs font-medium px-2.5 py-1 rounded-full border ${
-              isDriveConfigured 
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
-                : 'bg-amber-50 text-amber-700 border-amber-200'
-            }`}
+            className={`hidden md:flex items-center space-x-1.5 text-xs font-medium px-2.5 py-1 rounded-full border transition-colors ${syncColor}`}
           >
             <Cloud className="w-3.5 h-3.5" />
-            <span>{isDriveConfigured ? 'G.Drive Aktif' : 'DB Lokal'}</span>
+            <span>{syncLabel}</span>
           </div>
 
           {/* User info if logged in */}
